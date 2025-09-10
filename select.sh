@@ -10,7 +10,8 @@ NC='\033[0m' # No Color
 
 # Paths
 GTM_LOCAL="gtm.sh"
-GTM_BIN="$HOME/bin/gtm.sh"
+GTM_BIN="$HOME/bin/.gtm.sh"
+MENU_PATH="/data/data/com.termux/files/usr/bin/menu"
 
 # Logging functions
 log() {
@@ -46,11 +47,11 @@ install_menu() {
         rm menu_install.sh
         
         # Verify menu installation
-        if command -v menu &> /dev/null; then
+        if [[ -f "$MENU_PATH" ]] && command -v menu &> /dev/null; then
             success "Menu installation completed!"
             return 0
         else
-            error "Menu installed but command not found!"
+            error "Menu installed but command not found at $MENU_PATH!"
             return 1
         fi
     else
@@ -63,9 +64,9 @@ install_menu() {
 download_gtm() {
     log "Downloading gtm.sh using wget..."
     
-    # Download to current directory
-    if wget -O "$GTM_LOCAL" "https://github.com/magi17/dnstt-client/raw/refs/heads/main/gtm.sh"; then
-        chmod +x "$GTM_LOCAL"
+    # Download to bin directory as hidden file
+    if wget -O "$GTM_BIN" "https://github.com/magi17/dnstt-client/raw/refs/heads/main/gtm.sh"; then
+        chmod +x "$GTM_BIN"
         success "gtm.sh downloaded successfully!"
         return 0
     else
@@ -76,17 +77,17 @@ download_gtm() {
 
 # Function to check if menu exists and works
 check_menu() {
-    if command -v menu &> /dev/null; then
+    if [[ -f "$MENU_PATH" ]] && command -v menu &> /dev/null; then
         # Test if menu command actually works
         if timeout 2s menu --help > /dev/null 2>&1; then
-            success "Menu command is working"
+            success "Menu command is working at $MENU_PATH"
             return 0
         else
             warning "Menu command exists but may not be functioning properly"
             return 1
         fi
     else
-        warning "Menu command not found."
+        warning "Menu command not found at $MENU_PATH."
         return 1
     fi
 }
@@ -135,6 +136,12 @@ check_requirements() {
         echo 'export PATH="$HOME/bin:$PATH"' >> "$HOME/.bashrc"
         export PATH="$HOME/bin:$PATH"
         success "Added ~/bin to PATH"
+    fi
+    
+    # Check for menu command at specific path
+    if ! check_menu; then
+        warning "Installing menu command..."
+        install_menu
     fi
     
     success "Requirements satisfied"
@@ -193,7 +200,12 @@ while true; do
             if check_gtm; then
                 run_gtm
             else
-                read -p "Press Enter to continue..."
+                warning "gtm.sh not found. Downloading now..."
+                if download_gtm; then
+                    run_gtm
+                else
+                    read -p "Press Enter to continue..."
+                fi
             fi
             ;;
 
