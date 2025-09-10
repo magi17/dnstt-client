@@ -26,7 +26,7 @@ success() {
 }
 
 warning() {
-    echo -e "${YELLOW}[!]${NC} $1
+    echo -e "${YELLOW}[!]${NC} $1"
 }
 
 # Function to install menu using wget
@@ -156,10 +156,10 @@ while true; do
     display_header
     
     echo -e "${CYAN}=== Main Menu ==="
-    echo -e "1) GTM DNSTT (Menu)"
-    echo -e "2) GTM OVPN+DNSTT (gtm.sh)"    
-    echo -e "3) Install/Repair Menu"
-    echo -e "4) Exit"
+    echo "1) GTM DNSTT (Menu)"
+    echo "2) GTM OVPN+DNSTT (gtm.sh)"    
+    echo "3) Install/Repair Menu"
+    echo "4) Exit"
     echo -e "=================${NC}"
     
     read -p "Enter your choice (1-4): " choice
