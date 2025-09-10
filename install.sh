@@ -152,7 +152,7 @@ main_install() {
     echo -e "${CYAN}"
     echo "╔══════════════════════════════════════╗"
     echo "║        GTM Menu Installer            ║"
-    echo "║           (Using wget)               ║"
+    echo "║                                      ║"
     echo "╚══════════════════════════════════════╝"
     echo -e "${NC}"
     
