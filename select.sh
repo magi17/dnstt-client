@@ -78,13 +78,14 @@ download_gtm() {
 # Function to check if menu exists and works
 check_menu() {
     if [[ -f "$MENU_PATH" ]] && command -v menu &> /dev/null; then
-        # Test if menu command actually works
+        success "Menu command found at $MENU_PATH"
+        # Test if menu command works
         if timeout 2s menu --help > /dev/null 2>&1; then
-            success "Menu command is working at $MENU_PATH"
+            success "Menu command is fully functional"
             return 0
         else
             warning "Menu command exists but may not be functioning properly"
-            return 1
+            return 0  # Return success to avoid reinstalling
         fi
     else
         warning "Menu command not found at $MENU_PATH."
@@ -138,12 +139,6 @@ check_requirements() {
         success "Added ~/bin to PATH"
     fi
     
-    # Check for menu command at specific path
-    if ! check_menu; then
-        warning "Installing menu command..."
-        install_menu
-    fi
-    
     success "Requirements satisfied"
 }
 
@@ -176,12 +171,12 @@ while true; do
             # Check requirements first
             check_requirements
             
-            # Check and install menu if not found, then run it
+            # Check and run menu if found
             if check_menu; then
                 log "Starting menu..."
                 menu
             else
-                warning "Menu not found or not working. Installing now..."
+                warning "Menu not found. Installing now..."
                 if install_menu; then
                     log "Starting menu..."
                     menu
