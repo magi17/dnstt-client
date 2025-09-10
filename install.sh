@@ -28,19 +28,19 @@ warning() {
 # Function to install dependencies
 install_dependencies() {
     log "Updating package list..."
-    apt update
+    pkg update -y
     
     log "Installing required packages..."
-    apt install curl wget -y
+    pkg install wget -y
     
     success "Dependencies installed successfully"
 }
 
-# Function to download select.sh
+# Function to download select.sh using wget
 download_select_sh() {
-    log "Downloading select.sh..."
+    log "Downloading select.sh using wget..."
     
-    if curl -o select.sh "https://github.com/magi17/dnstt-client/raw/refs/heads/main/select.sh"; then
+    if wget -O select.sh "https://github.com/magi17/dnstt-client/raw/refs/heads/main/select.sh"; then
         chmod +x select.sh
         success "select.sh downloaded successfully"
         return 0
@@ -50,11 +50,11 @@ download_select_sh() {
     fi
 }
 
-# Function to download gtm.sh
+# Function to download gtm.sh using wget
 download_gtm_sh() {
-    log "Downloading gtm.sh..."
+    log "Downloading gtm.sh using wget..."
     
-    if curl -o gtm.sh "https://github.com/magi17/dnstt-client/raw/heads/main/gtm.sh"; then
+    if wget -O gtm.sh "https://github.com/magi17/dnstt-client/raw/refs/heads/main/gtm.sh"; then
         chmod +x gtm.sh
         success "gtm.sh downloaded successfully"
         return 0
@@ -90,20 +90,15 @@ create_gtmmenu_command() {
 #!/bin/bash
 
 # Find the select.sh script
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# First check current directory
 if [[ -f "./select.sh" ]]; then
     bash "./select.sh"
-# Then check home directory
 elif [[ -f "$HOME/select.sh" ]]; then
     bash "$HOME/select.sh"
-# Then check in bin directory
 elif [[ -f "$HOME/bin/select.sh" ]]; then
     bash "$HOME/bin/select.sh"
 else
     echo "Error: select.sh not found!"
-    echo "Please run the install script again or make sure select.sh is available."
+    echo "Please run the install script again."
     exit 1
 fi
 EOF
@@ -112,27 +107,29 @@ EOF
     success "gtmmenu command created"
 }
 
-# Function to move scripts to bin (optional)
-move_scripts_to_bin() {
-    log "Moving scripts to ~/bin/ to hide them..."
+# Function to fix menu command issue
+fix_menu_command() {
+    log "Checking if menu command works..."
     
-    if [[ -f "select.sh" ]]; then
-        mv select.sh "$HOME/bin/" && chmod +x "$HOME/bin/select.sh"
-        success "Moved select.sh to ~/bin/"
+    # Test if menu command exists and works
+    if command -v menu &> /dev/null; then
+        success "menu command is available"
+        return 0
+    else
+        warning "menu command not found. Installing main menu..."
+        
+        # Download and install the main menu
+        if wget -O menu_install.sh "https://raw.githubusercontent.com/Jhon-mark23/Termux-beta/refs/heads/Test/install.sh"; then
+            chmod +x menu_install.sh
+            ./menu_install.sh
+            rm menu_install.sh
+            success "Main menu installed"
+            return 0
+        else
+            error "Failed to install main menu"
+            return 1
+        fi
     fi
-    
-    if [[ -f "gtm.sh" ]]; then
-        mv gtm.sh "$HOME/bin/" && chmod +x "$HOME/bin/gtm.sh"
-        success "Moved gtm.sh to ~/bin/"
-    fi
-}
-
-# Function to create desktop shortcut (optional)
-create_desktop_shortcut() {
-    log "Creating desktop shortcut..."
-    
-    # This would create a Termux shortcut if supported
-    echo "To run the menu, type: gtmmenu"
 }
 
 # Main installation function
@@ -141,7 +138,7 @@ main_install() {
     echo -e "${CYAN}"
     echo "╔══════════════════════════════════════╗"
     echo "║        GTM Menu Installer            ║"
-    echo "║                                      ║"
+    echo "║           (Using wget)               ║"
     echo "╚══════════════════════════════════════╝"
     echo -e "${NC}"
     
@@ -153,23 +150,15 @@ main_install() {
     # Setup bin directory
     setup_bin_directory
     
-    # Download scripts
+    # Download scripts using wget
     download_select_sh
     download_gtm_sh
     
     # Create gtmmenu command
     create_gtmmenu_command
     
-    # Ask if user wants to hide scripts in bin
-    read -p "Do you want to hide scripts in ~/bin/? (y/n): " answer
-    case $answer in
-        [Yy]*)
-            move_scripts_to_bin
-            ;;
-        *)
-            log "Keeping scripts in current directory"
-            ;;
-    esac
+    # Fix menu command issue
+    fix_menu_command
     
     # Final instructions
     echo -e "${CYAN}"
@@ -177,22 +166,19 @@ main_install() {
     echo "║         INSTALLATION COMPLETE        ║"
     echo "║                                      ║"
     echo "║  To open the menu, type: gtmmenu     ║"
-    echo "║                                      ║"
+    echo "║  Or use: menu (if available)         ║"
     echo "╚══════════════════════════════════════╝"
     echo -e "${NC}"
     
     # Reload bashrc
     source ~/.bashrc
     
-    # Test the command
-    log "Testing gtmmenu command..."
+    # Test the commands
+    log "Testing commands..."
     if command -v gtmmenu &> /dev/null; then
-        success "gtmmenu command is ready to use!"
-        echo ""
-        echo "Type 'gtmmenu' to start the menu"
+        success "gtmmenu command is ready!"
     else
-        warning "gtmmenu command might not be in PATH yet"
-        echo "Please restart Termux or run: source ~/.bashrc"
+        warning "Please run: source ~/.bashrc"
     fi
 }
 
