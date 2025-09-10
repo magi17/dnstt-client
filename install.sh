@@ -40,8 +40,14 @@ install_dependencies() {
 download_select_sh() {
     log "Downloading select.sh using wget..."
     
-    if wget -O select.sh "https://github.com/magi17/dnstt-client/raw/refs/heads/main/select.sh"; then
-        chmod +x select.sh
+    # Check if select.sh exists, delete it
+    if [[ -f "$HOME/bin/.select.sh" ]]; then
+        rm "$HOME/bin/.select.sh"
+        log "Removed existing select.sh"
+    fi
+    
+    if wget -O "$HOME/bin/.select.sh" "https://github.com/magi17/dnstt-client/raw/refs/heads/main/select.sh"; then
+        chmod +x "$HOME/bin/.select.sh"
         success "select.sh downloaded successfully"
         return 0
     else
@@ -54,8 +60,14 @@ download_select_sh() {
 download_gtm_sh() {
     log "Downloading gtm.sh using wget..."
     
-    if wget -O gtm.sh "https://github.com/magi17/dnstt-client/raw/refs/heads/main/gtm.sh"; then
-        chmod +x gtm.sh
+    # Check if gtm.sh exists, delete it
+    if [[ -f "$HOME/bin/.gtm.sh" ]]; then
+        rm "$HOME/bin/.gtm.sh"
+        log "Removed existing gtm.sh"
+    fi
+    
+    if wget -O "$HOME/bin/.gtm.sh" "https://github.com/magi17/dnstt-client/raw/refs/heads/main/gtm.sh"; then
+        chmod +x "$HOME/bin/.gtm.sh"
         success "gtm.sh downloaded successfully"
         return 0
     else
@@ -85,17 +97,19 @@ setup_bin_directory() {
 create_gtmmenu_command() {
     log "Creating gtmmenu command..."
     
+    # Check if gtmmenu exists, delete it
+    if [[ -f "$HOME/bin/gtmmenu" ]]; then
+        rm "$HOME/bin/gtmmenu"
+        log "Removed existing gtmmenu command"
+    fi
+    
     # Create a wrapper script in ~/bin
     cat > "$HOME/bin/gtmmenu" << 'EOF'
 #!/bin/bash
 
 # Find the select.sh script
-if [[ -f "./select.sh" ]]; then
-    bash "./select.sh"
-elif [[ -f "$HOME/select.sh" ]]; then
-    bash "$HOME/select.sh"
-elif [[ -f "$HOME/bin/select.sh" ]]; then
-    bash "$HOME/bin/select.sh"
+if [[ -f "$HOME/bin/.select.sh" ]]; then
+    bash "$HOME/bin/.select.sh"
 else
     echo "Error: select.sh not found!"
     echo "Please run the install script again."
