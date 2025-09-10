@@ -11,6 +11,7 @@ NC='\033[0m' # No Color
 # Paths
 GTM_LOCAL="gtm.sh"
 GTM_BIN="$HOME/bin/gtm.sh"
+SELECT_BIN="$HOME/bin/select.sh"
 
 # Logging functions
 log() {
